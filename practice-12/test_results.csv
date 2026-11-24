@@ -1,0 +1,9 @@
+﻿Test ID,Scenario,Start,Duration (min),Blocked,Expected,Observed (rule-level),Expected reason code,Observed reason code,Result
+T1,Valid free interval,2026-11-25T10:00,30,False,Available,Available,AVAILABLE,AVAILABLE,PASS
+T2,Overlap existing booking,2026-11-25T11:30,30,False,Unavailable,Unavailable,BOOKING_CONFLICT,BOOKING_CONFLICT,PASS
+T3,Blocked room,2026-11-25T10:00,30,True,Unavailable,Unavailable,ROOM_BLOCKED,ROOM_BLOCKED,PASS
+T4,Duration equals zero,2026-11-25T10:00,0,False,Validation error,Validation error,INVALID_DURATION,INVALID_DURATION,PASS
+T5,Duration equals 121 minutes,2026-11-25T10:00,121,False,Validation error,Validation error,INVALID_DURATION,INVALID_DURATION,PASS
+T6,Past start time,2026-11-24T07:00,30,False,Validation error,Validation error,PAST_START,PAST_START,PASS
+T7,Adjacent non-overlapping interval,2026-11-25T12:00,60,False,Available,Available,AVAILABLE,AVAILABLE,PASS
+T8,Booking data unchanged after checks,2026-11-25T10:00,30,False,Unchanged (read-only),Unchanged (read-only; no write operation exists),AVAILABLE,AVAILABLE,PASS
