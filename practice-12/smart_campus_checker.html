@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Campus — Room Availability Checker</title>
+<style>
+:root{font-family:Inter,system-ui,Arial,sans-serif;color:#172033;background:#f3f6fb}
+*{box-sizing:border-box}body{margin:0;padding:32px 16px}.wrap{max-width:760px;margin:auto}
+header{margin-bottom:22px}h1{margin:0 0 8px;font-size:clamp(25px,5vw,36px)}.sub{color:#5d687b}
+.card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 8px 28px #182b4b0d}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:block;font-weight:650;font-size:14px;margin-bottom:7px}
+input,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;background:white}
+button{margin-top:18px;padding:13px 18px;border:0;border-radius:9px;background:#2457d6;color:white;font-weight:700;font-size:15px;cursor:pointer}
+button:hover{background:#1946b7}.result{margin-top:18px;padding:16px;border-radius:10px;display:none}
+.ok{display:block;background:#e8f7ee;color:#17643a}.bad{display:block;background:#fff0ed;color:#9b2c20}
+.small{font-size:13px;color:#657187;margin-top:18px;line-height:1.5}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.card{padding:18px}}
+</style></head>
+<body><main class="wrap">
+<header><h1>Smart Campus</h1><div class="sub">Room Availability Checker · Fictional campus room · Demo only</div></header>
+<section class="card"><h2>Check room availability</h2>
+<div class="grid">
+<div><label for="start">Start date and time</label><input id="start" type="datetime-local"></div>
+<div><label for="duration">Duration</label><select id="duration"><option value="30">30 minutes</option><option value="60" selected>60 minutes</option><option value="90">90 minutes</option><option value="120">120 minutes</option><option value="121">121 minutes (invalid test)</option><option value="0">0 minutes (invalid test)</option></select></div>
+</div>
+<p><label><input id="blocked" type="checkbox" style="width:auto"> Room is blocked (test condition)</label></p>
+<button id="check">Check availability</button><div id="result" class="result" role="status" aria-live="polite"></div>
+<p class="small">Existing fictional bookings on 25 November 2026: 09:00–10:00, 11:00–12:00, and 14:00–15:00. Booking data is read-only.</p>
+</section></main>
+<script>
+const BOOKINGS=[
+{id:"B001",start:"2026-11-25T09:00",end:"2026-11-25T10:00"},
+{id:"B002",start:"2026-11-25T11:00",end:"2026-11-25T12:00"},
+{id:"B003",start:"2026-11-25T14:00",end:"2026-11-25T15:00"}];
+function checkAvailability({start,duration,blocked,bookings=BOOKINGS,now=new Date()}){
+ const d=new Date(start),m=Number(duration);
+ if(!start||Number.isNaN(d.getTime()))return{available:false,reasonCode:"INVALID_START",message:"Please enter a valid start date and time."};
+ if(d.getTime()<=now.getTime())return{available:false,reasonCode:"PAST_START",message:"Start time must be in the future."};
+ if(!Number.isFinite(m)||m<=0||m>120)return{available:false,reasonCode:"INVALID_DURATION",message:"Duration must be greater than 0 and no more than 120 minutes."};
+ if(blocked)return{available:false,reasonCode:"ROOM_BLOCKED",message:"This room is currently blocked."};
+ const end=new Date(d.getTime()+m*60000),conflict=bookings.some(b=>d<new Date(b.end)&&end>new Date(b.start));
+ return conflict?{available:false,reasonCode:"BOOKING_CONFLICT",message:"The selected time overlaps an existing booking."}:{available:true,reasonCode:"AVAILABLE",message:"The room is available for the selected time."};}
+document.getElementById("check").addEventListener("click",()=>{
+ const result=checkAvailability({start:document.getElementById("start").value,duration:document.getElementById("duration").value,blocked:document.getElementById("blocked").checked});
+ const box=document.getElementById("result");box.className="result "+(result.available?"ok":"bad");
+ box.textContent=(result.available?"AVAILABLE — ":"UNAVAILABLE — ")+result.message+" ["+result.reasonCode+"]";});
+</script></body></html>
